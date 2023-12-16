@@ -20,4 +20,47 @@ print("Hello World")
 
 # COMMAND ----------
 
+print("Hello")
+
+# COMMAND ----------
+
+# MAGIC %scala
+# MAGIC println("Hello World")
+
+# COMMAND ----------
+
+#DBUTILS
+
+
+# COMMAND ----------
+
+dbutils.help()
+
+# COMMAND ----------
+
+dbutils.fs.help()
+
+# COMMAND ----------
+
+dbutils.fs.ls('/')
+
+# COMMAND ----------
+
+dbutils.fs.ls('dbfs:/databricks-datasets/')
+
+# COMMAND ----------
+
+# MAGIC %fs
+# MAGIC ls '/'
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
 
