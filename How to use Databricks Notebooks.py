@@ -1,5 +1,4 @@
 # Databricks notebook source
-
 print('xyz')
 
 # COMMAND ----------
@@ -55,7 +54,7 @@ dbutils.fs.ls('dbfs:/databricks-datasets/')
 
 # COMMAND ----------
 
-
+dbutils.fs.ls('dbfs:/FileStore/tables/')
 
 # COMMAND ----------
 
