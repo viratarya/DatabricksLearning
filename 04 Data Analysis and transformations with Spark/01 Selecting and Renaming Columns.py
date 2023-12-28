@@ -98,4 +98,24 @@ CountriesRegion = spark.read.options(header='True').csv(path=CountriesRegion_pat
 
 # COMMAND ----------
 
-CountriesRegion.select()
+from pyspark.sql.functions import current_date
+
+Countries.withColumn('Current_date',current_date()).display()
+
+# COMMAND ----------
+
+CountriesRegion.display()
+
+# COMMAND ----------
+
+from pyspark.sql.functions import lit
+
+Countries.withColumn('updated_by',lit('VA')).display()
+
+# COMMAND ----------
+
+Countries.withColumn('population_m',Countries['population']/10000000).display()
+
+# COMMAND ----------
+
+
