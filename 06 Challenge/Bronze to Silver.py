@@ -1,15 +1,15 @@
 # Databricks notebook source
 from pyspark.sql.functions import *
 
-orderItems_path = 'dbfs:/FileStore/tables/Bronze/order_items.csv'
+orderItems_path = 'dbfs:/FileStore/tables/bronze/order_items.csv'
 
-orders_path= 'dbfs:/FileStore/tables/Bronze/orders.csv'
+orders_path= 'dbfs:/FileStore/tables/bronze/orders.csv'
 
-products_path ='dbfs:/FileStore/tables/Bronze/products.csv'
+products_path ='dbfs:/FileStore/tables/bronze/products.csv'
 
-stores_path='dbfs:/FileStore/tables/Bronze/stores.csv'
+stores_path='dbfs:/FileStore/tables/bronze/stores.csv'
 
-customers_path='dbfs:/FileStore/tables/Bronze/customers.csv'
+customers_path='dbfs:/FileStore/tables/bronze/customers.csv'
 
 # orders = spark.read.csv(inferSchema=True,header=True, path=orders_path)
 # products = spark.read.csv(inferSchema=True,header=True, path=products_path)
@@ -97,28 +97,97 @@ customers = spark.read.csv(schema=customers_schema,header=True, path=customers_p
 
 # COMMAND ----------
 
-display(orders)
-display(products)
-display(orderItems)
-display(customers)
-display(stores)
-
-
-# COMMAND ----------
-
 from pyspark.sql.functions import col
 from pyspark.sql.types import TimestampType
 
-orders = orders.withColumn("ORDER_Timestamp", to_timestamp(col("ORDER_DATETIME"))).drop(
+orders = orders.select((to_timestamp(col("ORDER_DATETIME"),'dd-MMM-yy kk.mm.ss.SS')).alias('ORDER_Timestamp'),
+                       'ORDER_ID',
+                       'CUSTOMER_ID',
+                       'ORDER_STATUS',
+                       'STORE_ID').drop(
     col("ORDER_DATETIME")
-)
+).filter(col('ORDER_STATUS') == 'COMPLETE')
+display(orders)
 
 # COMMAND ----------
 
-orders = orders.join(stores, orders("STORE_ID") == stores("STORE_ID"), "inner")
+orders = orders.join(stores, orders["STORE_ID"] == stores["STORE_ID"], "left").select(col('order_id'),col('ORDER_Timestamp'),col('CUSTOMER_ID'),col('ORDER_STATUS'),col('store_name'))
 
 # COMMAND ----------
 
-orders=orders.select(
-    orders("id"), orders("order_timestamp"), orders("customer_id"), stores("STORE_NAME")
+display(orders)
+
+# COMMAND ----------
+
+orders.write.parquet('/FileStore/tables/silver/orders_parquet',mode='overwrite')
+
+# COMMAND ----------
+
+display(orderItems)
+
+# COMMAND ----------
+
+orderItems= orderItems.drop('LINE_ITEM_ID')
+
+# COMMAND ----------
+
+display(orderItems)
+
+# COMMAND ----------
+
+orderItems.write.parquet('/FileStore/tables/silver/orderItems',mode='overwrite')
+
+# COMMAND ----------
+
+display(products)
+
+# COMMAND ----------
+
+products.write.parquet('/FileStore/tables/silver/products',mode='overwrite')
+
+# COMMAND ----------
+
+display(customers)
+
+# COMMAND ----------
+
+customers.printSchema()
+
+# COMMAND ----------
+
+customers.write.parquet('/FileStore/tables/silver/customers',mode='overwrite')
+
+# COMMAND ----------
+
+orders.schema
+
+# COMMAND ----------
+
+products.schema
+
+# COMMAND ----------
+
+orderItems.schema
+
+# COMMAND ----------
+
+customers.schema
+
+# COMMAND ----------
+
+orderItems_schema = StructType(
+    [
+        StructField("ORDER_ID", IntegerType(), True),
+        StructField("PRODUCT_ID", IntegerType(), True),
+        StructField("UNIT_PRICE", DoubleType(), True),
+        StructField("QUANTITY", IntegerType(), True),
+    ]
 )
+
+orderItems = spark.read.options(schema= orderItems_schema).parquet('/FileStore/tables/silver/orderItems')
+
+display(orderItems)
+
+# COMMAND ----------
+
+
