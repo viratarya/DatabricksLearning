@@ -81,7 +81,7 @@ display(orderDetails)
 
 # COMMAND ----------
 
-from pyspark.sql.functions import round
+from pyspark.sql.functions import round,desc, asc
 
 orderDetails= orderDetails.select('order_id','order_date','customer_id','store_name',round(col('sum(UNIT_PRICE)'),2).alias('Total_sales'))
 
@@ -102,7 +102,7 @@ monthlySales = monthlySales.join(
 monthlySales.printSchema()
 
 monthlySales = monthlySales.groupBy("order_Month").sum("UNIT_PRICE")
-monthlySales= monthlySales.select('order_Month',round(col('sum(UNIT_PRICE)'),2).alias('Total_sales'))
+monthlySales= monthlySales.select('order_Month',round(col('sum(UNIT_PRICE)'),2).alias('Total_sales')).sort(desc('order_month'))
 monthlySales.display()
 monthlySales.write.parquet(mode='overwrite',path='dbfs:/FileStore/tables/Gold/monthlySales')
 
@@ -118,7 +118,7 @@ StoreMonthlySales = StoreMonthlySales.join(
 StoreMonthlySales.printSchema()
 
 StoreMonthlySales = StoreMonthlySales.groupBy("order_Month", col('store_name')).sum("UNIT_PRICE")
-StoreMonthlySales= StoreMonthlySales.select('order_Month',col('store_name'),round(col('sum(UNIT_PRICE)'),2).alias('Total_sales'))
+StoreMonthlySales= StoreMonthlySales.select('order_Month',col('store_name'),round(col('sum(UNIT_PRICE)'),2).alias('Total_sales')).sort(desc('order_month'))
 StoreMonthlySales.display()
 StoreMonthlySales.write.parquet(mode='overwrite',path='dbfs:/FileStore/tables/Gold/StoreMonthlySales')
 
